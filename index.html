@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="index.css">    
+</head>
+<body>
+  <div class="container">
+    <h1>To-Do List</h1>
+    <div class="input-group">
+      <input type="text" id="task-input" placeholder="Новая задача...">
+      <button id="add-btn">Добавить</button>
+    </div>
+    <ul id="task-list"></ul>
+  </div>
+
+  <script>
+    const input = document.getElementById('task-input');
+    const addBtn = document.getElementById('add-btn');
+    const taskList = document.getElementById('task-list');
+
+    function saveTasks() {
+      const tasks = [];
+      document.querySelectorAll('#task-list li').forEach(li => {
+        tasks.push({ text: li.firstChild.textContent, completed: li.classList.contains('completed') });
+      });
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      tasks.forEach(task => addTask(task.text, task.completed));
+    }
+
+    function addTask(text, completed = false) {
+      const li = document.createElement('li');
+      li.textContent = text;
+      if (completed) li.classList.add('completed');
+
+      const btnGroup = document.createElement('span');
+      btnGroup.className = 'btn-group';
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.textContent = completed ? '↺' : '✓';
+      toggleBtn.onclick = () => {
+        li.classList.toggle('completed');
+        toggleBtn.textContent = li.classList.contains('completed') ? '↺' : '✓';
+        saveTasks();
+      };
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '🗑';
+      delBtn.onclick = () => {
+        li.remove();
+        saveTasks();
+      };
+
+      btnGroup.appendChild(toggleBtn);
+      btnGroup.appendChild(delBtn);
+      li.appendChild(btnGroup);
+      taskList.appendChild(li);
+      saveTasks();
+    }
+
+    addBtn.onclick = () => {
+      const text = input.value.trim();
+      if (text) {
+        addTask(text);
+        input.value = '';
+        input.focus();
+      }
+    };
+
+    // Enter для добавления
+    input.addEventListener('keyup', e => {
+      if (e.key === 'Enter') addBtn.click();
+    });
+
+    // Загрузка при старте
+    loadTasks();
+  </script>
+</body>
+</html>
